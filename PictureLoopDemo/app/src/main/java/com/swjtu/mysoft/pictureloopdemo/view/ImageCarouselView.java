@@ -6,8 +6,13 @@ import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
+import com.swjtu.mysoft.pictureloopdemo.R;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,6 +24,7 @@ public class ImageCarouselView extends RelativeLayout{
     private Context context;
     private List<View> views;
     private ViewPager mViewPager;
+    private List<ImageView> points;
     private boolean isReady = false;
 
     public ImageCarouselView(Context context) {
@@ -49,6 +55,33 @@ public class ImageCarouselView extends RelativeLayout{
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
                     , ViewGroup.LayoutParams.MATCH_PARENT);
             this.addView(mViewPager,params);
+            points = new ArrayList<ImageView>();
+
+            //底下包含标题以及point的RelativeLayout
+            RelativeLayout tailContent = new RelativeLayout(context);
+            RelativeLayout.LayoutParams tailParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
+                    , ViewGroup.LayoutParams.WRAP_CONTENT);
+            tailParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            
+            int color = context.getResources().getColor(R.color.pointbackground);
+            tailContent.setBackgroundColor(color);
+
+            //包含下面point的LinearLayout
+            LinearLayout pointsContainer = new LinearLayout(context);
+            LinearLayout.LayoutParams pointParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            for(int i=0;i<views.size();i++){
+                ImageView point = new ImageView(context);
+                points.add(point);
+            }
+
+            for(int i=0;i<points.size();i++){
+                ImageView point = points.get(i);
+                point.setBackgroundResource(R.drawable.whitepoint);
+                pointsContainer.addView(point);
+            }
+            tailContent.addView(pointsContainer,pointParams);
+            addView(tailContent,tailParams);
             mViewPager.setAdapter(new ImagePageAdapter(views));
             mViewPager.setOnPageChangeListener(new ImageOnPageChangeListener(views));
 
@@ -93,7 +126,6 @@ public class ImageCarouselView extends RelativeLayout{
 
         this.views = views;
 
-
     }
 
     class ImagePageAdapter extends PagerAdapter {
@@ -128,7 +160,6 @@ public class ImageCarouselView extends RelativeLayout{
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
 
-            System.out.println("position:"+position);
             View view = src.get(position%src.size());
             container.addView(view);
             return view;
