@@ -1,59 +1,59 @@
 package com.swjtu.mysoft.pictureloopdemo;
 
-import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-
+import com.swjtu.mysoft.pictureloopdemo.bean.LoopImage;
 import com.swjtu.mysoft.pictureloopdemo.view.ImageCarouselView;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<View> images;
-    private ImageCarouselView mImagecarouselView;
 
+    private ImageCarouselView mImagecarouselView;
+    private List<LoopImage> mLoopImages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        images = new ArrayList<View>();
-        Drawable bd1 = getResources().getDrawable(R.drawable.bg1);
-        Drawable bd2 = getResources().getDrawable(R.drawable.bg2);
-        Drawable bd3 = getResources().getDrawable(R.drawable.bg3);
-        Drawable bd4 = getResources().getDrawable(R.drawable.bg4);
-        View view1 = LayoutInflater.from(this).inflate(R.layout.top_image,null);
-        View view2 = LayoutInflater.from(this).inflate(R.layout.top_image,null);
-        View view3 = LayoutInflater.from(this).inflate(R.layout.top_image,null);
-        View view4 = LayoutInflater.from(this).inflate(R.layout.top_image,null);
 
-        ImageView iv1 = (ImageView) view1.findViewById(R.id.image);
-        iv1.setBackground(bd1);
-        ImageView iv2 = (ImageView) view2.findViewById(R.id.image);
-        iv2.setBackground(bd2);
-        ImageView iv3 = (ImageView) view3.findViewById(R.id.image);
-        iv3.setBackground(bd3);
-        ImageView iv4 = (ImageView) view4.findViewById(R.id.image);
-        iv4.setBackground(bd4);
-        images.add(view1);
-        images.add(view2);
-        images.add(view3);
-        images.add(view4);
+        //Simple Code : How To Use
 
+        //1. 找到ImageCarouselView控件
         mImagecarouselView = (ImageCarouselView) findViewById(R.id.imagecarouse);
-        mImagecarouselView.initView(images);
+
+        //2. 创建N个LoopImage对象
+        mLoopImages = new ArrayList<LoopImage>();
+        Drawable d1 = getResources().getDrawable(R.drawable.bg1);
+        Drawable d2 = getResources().getDrawable(R.drawable.bg2);
+        Drawable d3 = getResources().getDrawable(R.drawable.bg3);
+        Drawable d4 = getResources().getDrawable(R.drawable.bg4);
+        BitmapDrawable bd1 = (BitmapDrawable) d1;
+        BitmapDrawable bd2 = (BitmapDrawable) d2;
+        BitmapDrawable bd3 = (BitmapDrawable) d3;
+        BitmapDrawable bd4 = (BitmapDrawable) d4;
+        LoopImage loopImage1 = new LoopImage();
+        loopImage1.setTitle("西南交大美如画1");
+        loopImage1.setmBitmap(bd1.getBitmap());
+        mLoopImages.add(loopImage1);
+        LoopImage loopImage2 = new LoopImage();
+        loopImage2.setTitle("西南交大美如画2");
+        loopImage2.setmBitmap(bd2.getBitmap());
+        mLoopImages.add(loopImage2);
+        LoopImage loopImage3 = new LoopImage();
+        loopImage3.setTitle("西南交大美如画3");
+        loopImage3.setmBitmap(bd3.getBitmap());
+        mLoopImages.add(loopImage3);
+        LoopImage loopImage4 = new LoopImage();
+        loopImage4.setTitle("西南交大美如画4");
+        loopImage4.setmBitmap(bd4.getBitmap());
+        mLoopImages.add(loopImage4);
+        //3. 进行数据绑定
+        mImagecarouselView.bindData(mLoopImages);
+
 
     }
 

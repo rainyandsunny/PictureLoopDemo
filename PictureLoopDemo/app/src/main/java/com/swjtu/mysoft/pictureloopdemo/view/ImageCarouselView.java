@@ -1,16 +1,21 @@
 package com.swjtu.mysoft.pictureloopdemo.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.swjtu.mysoft.pictureloopdemo.R;
+import com.swjtu.mysoft.pictureloopdemo.bean.LoopImage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +31,8 @@ public class ImageCarouselView extends RelativeLayout{
     private ViewPager mViewPager;
     private List<ImageView> points;
     private boolean isReady = false;
+    private List<LoopImage> mLoopImages;
+    private TextView mTitleTextView;
 
     public ImageCarouselView(Context context) {
         super(context);
@@ -49,7 +56,7 @@ public class ImageCarouselView extends RelativeLayout{
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
 
-        super.onLayout(changed, l, t, r, b);
+
         if(!isReady){
             mViewPager = new ViewPager(context);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
@@ -62,24 +69,51 @@ public class ImageCarouselView extends RelativeLayout{
             RelativeLayout.LayoutParams tailParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
                     , ViewGroup.LayoutParams.WRAP_CONTENT);
             tailParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            
+
             int color = context.getResources().getColor(R.color.pointbackground);
             tailContent.setBackgroundColor(color);
 
             //包含下面point的LinearLayout
             LinearLayout pointsContainer = new LinearLayout(context);
-            LinearLayout.LayoutParams pointParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            RelativeLayout.LayoutParams pointParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT
+                    , ViewGroup.LayoutParams.WRAP_CONTENT);
+            pointParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            pointParams.addRule(RelativeLayout.CENTER_VERTICAL);
+
+            int tailMarginLeftAndRight = (int)context.getResources().getDimension(R.dimen.tail_leftAndRight_Margin);
+            int marginRight = (int)context.getResources().getDimension(R.dimen.point_distance);
+            int marginTop = (int)context.getResources().getDimension(R.dimen.point_topMarign);
+            int marginBottom = (int)context.getResources().getDimension(R.dimen.point_BottomMarign);
+
+            pointParams.setMarginEnd(tailMarginLeftAndRight);
             for(int i=0;i<views.size();i++){
                 ImageView point = new ImageView(context);
                 points.add(point);
             }
+            LinearLayout.LayoutParams singlePointParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT
+                    , ViewGroup.LayoutParams.WRAP_CONTENT);
 
+            singlePointParams.setMargins(0,marginTop,marginRight,marginBottom);
             for(int i=0;i<points.size();i++){
                 ImageView point = points.get(i);
-                point.setBackgroundResource(R.drawable.whitepoint);
-                pointsContainer.addView(point);
+                if(i==0){
+                    point.setBackgroundResource(R.drawable.whitepoint);
+                }else{
+                    point.setBackgroundResource(R.drawable.greypoint);
+                }
+                pointsContainer.addView(point,singlePointParams);
             }
+
+            //添加标题栏内容
+            mTitleTextView = new TextView(context);
+            mTitleTextView.setTextColor(context.getResources().getColor(R.color.titlefontColor));
+            mTitleTextView.setText(mLoopImages.get(0).getTitle());
+            RelativeLayout.LayoutParams titleParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT
+                    , ViewGroup.LayoutParams.WRAP_CONTENT);
+            titleParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            titleParams.addRule(RelativeLayout.CENTER_VERTICAL);
+            titleParams.setMargins(tailMarginLeftAndRight,marginTop,0,marginBottom);
+            tailContent.addView(mTitleTextView,titleParams);
             tailContent.addView(pointsContainer,pointParams);
             addView(tailContent,tailParams);
             mViewPager.setAdapter(new ImagePageAdapter(views));
@@ -87,7 +121,7 @@ public class ImageCarouselView extends RelativeLayout{
 
         }
         isReady = true;
-
+        super.onLayout(changed, l, t, r, b);
 
 
     }
@@ -128,14 +162,30 @@ public class ImageCarouselView extends RelativeLayout{
 
     }
 
+    public void bindData(List<LoopImage> loopImages){
+
+        mLoopImages = loopImages;
+        views = new ArrayList<View>();
+        for(int i=0;i<mLoopImages.size();i++){
+            View view = LayoutInflater.from(getContext()).inflate(R.layout.top_image,null);
+            ImageView iv1 = (ImageView) view.findViewById(R.id.image);
+            Bitmap bitmap = mLoopImages.get(i).getmBitmap();
+            BitmapDrawable bd = new BitmapDrawable(bitmap);
+            iv1.setBackground(bd);
+            views.add(view);
+        }
+
+    }
+
     class ImagePageAdapter extends PagerAdapter {
 
-        public List<View> src;
+        private List<View> src;
 
 
         public ImagePageAdapter(List<View> src){
 
             this.src = src;
+
         }
         @Override
         public int getCount() {
@@ -185,6 +235,15 @@ public class ImageCarouselView extends RelativeLayout{
 
             int size = views.size();
             mViewPager.setCurrentItem(position%size,true);
+            mTitleTextView.setText(mLoopImages.get(position%size).getTitle());
+            for(int i=0;i<size;i++){
+
+                if(i == position % size){
+                    points.get(i).setBackgroundResource(R.drawable.whitepoint);
+                }else{
+                    points.get(i).setBackgroundResource(R.drawable.greypoint);
+                }
+            }
 
         }
 
