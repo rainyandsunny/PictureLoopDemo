@@ -1,8 +1,10 @@
 ---
-title: Android图片轮播组件
+**# Android图片轮播组件**
 tags: Android，广告，轮播图组件
+
 运行效果如下图：
-![enter description here][1]
+![运行效果如下][1]
+
 引入方式：
 
 
