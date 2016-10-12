@@ -1,12 +1,18 @@
 package com.swjtu.mysoft.pictureloopdemo.view;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -19,13 +25,16 @@ import com.swjtu.mysoft.pictureloopdemo.bean.LoopImage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * 图片轮播view
  * Created by yhp5210 on 2016/9/21.
  */
-public class ImageCarouselView extends RelativeLayout{
+public class ImageCarouselView extends RelativeLayout implements Runnable{
 
+    private final String TAG = "ImageCarouselView";
     private Context context;
     private List<View> views;
     private ViewPager mViewPager;
@@ -33,6 +42,35 @@ public class ImageCarouselView extends RelativeLayout{
     private boolean isReady = false;
     private List<LoopImage> mLoopImages;
     private TextView mTitleTextView;
+    private boolean mAutoScroll;
+    private LoopImageListenter  mListener;
+    private int mCurrentPos; // 记录当前图片的下标
+    private long mSleepTime = 2000; //停顿时间默认一秒
+    private TypedArray mTypedArray;
+    private final int MSG_UPDATE_IMAGES = 0;
+    private Thread mAutoLoopThread;
+
+    private Handler mHandler = new Handler(){
+
+        @Override
+        public void handleMessage(Message msg){
+
+            switch (msg.what){
+
+                case MSG_UPDATE_IMAGES:{
+
+                    if(null != views && views.size() > 1 &&mAutoScroll){
+                        updateView((mCurrentPos++)%views.size());
+                        sendEmptyMessageDelayed(MSG_UPDATE_IMAGES,mSleepTime);
+                    }
+
+                }break;
+
+            }
+
+        }
+    };
+
 
     public ImageCarouselView(Context context) {
         super(context);
@@ -41,10 +79,12 @@ public class ImageCarouselView extends RelativeLayout{
     public ImageCarouselView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
+        mTypedArray = context.obtainStyledAttributes(attrs,R.styleable.ImageCarouselView);
     }
     public ImageCarouselView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
+        mTypedArray = context.obtainStyledAttributes(attrs,R.styleable.ImageCarouselView);
     }
 
     @Override
@@ -57,7 +97,13 @@ public class ImageCarouselView extends RelativeLayout{
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
 
 
+
         if(!isReady){
+
+
+            //得到相应的参数
+            mAutoScroll = mTypedArray.getBoolean(R.styleable.ImageCarouselView_autoScroll,true);
+            mSleepTime = mTypedArray.getInt(R.styleable.ImageCarouselView_loopSleepTime,1500);
             mViewPager = new ViewPager(context);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
                     , ViewGroup.LayoutParams.MATCH_PARENT);
@@ -118,10 +164,15 @@ public class ImageCarouselView extends RelativeLayout{
             addView(tailContent,tailParams);
             mViewPager.setAdapter(new ImagePageAdapter(views));
             mViewPager.setOnPageChangeListener(new ImageOnPageChangeListener(views));
+            if(mAutoScroll){
+                mAutoLoopThread = new Thread(this);
+                mAutoLoopThread.start();
+            }
 
         }
         isReady = true;
         super.onLayout(changed, l, t, r, b);
+
 
 
     }
@@ -151,20 +202,14 @@ public class ImageCarouselView extends RelativeLayout{
         return size;
     }
 
-
     /**
      * 必须要调用，初始化view
-     * @param views
+     * @param loopImages
      */
-    public void initView(List<View> views){
-
-        this.views = views;
-
-    }
-
-    public void bindData(List<LoopImage> loopImages){
+    public void bindData(List<LoopImage> loopImages,LoopImageListenter listener){
 
         mLoopImages = loopImages;
+        mListener = listener;
         views = new ArrayList<View>();
         for(int i=0;i<mLoopImages.size();i++){
             View view = LayoutInflater.from(getContext()).inflate(R.layout.top_image,null);
@@ -175,7 +220,69 @@ public class ImageCarouselView extends RelativeLayout{
             views.add(view);
         }
 
+
+
+
+
     }
+
+    public void setAutoScroll(boolean isAutoScroll){
+        mAutoScroll = isAutoScroll;
+    }
+
+
+    public void updateView(int position){
+
+        for(int i=0;i<points.size();i++){
+            ImageView point = points.get(i);
+            if(i==position){
+                point.setBackgroundResource(R.drawable.whitepoint);
+            }else{
+                point.setBackgroundResource(R.drawable.greypoint);
+            }
+        }
+        mTitleTextView.setText(mLoopImages.get(position).getTitle());
+        mViewPager.setCurrentItem(position);
+    }
+
+    @Override
+    public void run() {
+
+        if (mAutoScroll){
+
+            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_IMAGES,mSleepTime);
+
+        }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev){
+
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev){
+
+        if(MotionEvent.ACTION_DOWN == ev.getAction()){
+
+            mAutoScroll = false;
+        }else if(MotionEvent.ACTION_UP == ev.getAction()){
+            mAutoScroll = true;
+            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_IMAGES,mSleepTime);
+        }
+        return super.onInterceptTouchEvent(ev);
+
+    }
+
+
+
+    public void stopImageLoop(){
+
+        mAutoScroll = false;
+        mAutoLoopThread = null;
+    }
+
 
     class ImagePageAdapter extends PagerAdapter {
 
@@ -208,10 +315,16 @@ public class ImageCarouselView extends RelativeLayout{
         }
 
         @Override
-        public Object instantiateItem(ViewGroup container, int position) {
+        public Object instantiateItem(ViewGroup container, final int position) {
 
             View view = src.get(position%src.size());
             container.addView(view);
+            view.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mListener.imageOnClickListenter(position);
+                }
+            });
             return view;
         }
     }
@@ -234,16 +347,8 @@ public class ImageCarouselView extends RelativeLayout{
         public void onPageSelected(int position) {
 
             int size = views.size();
-            mViewPager.setCurrentItem(position%size,true);
-            mTitleTextView.setText(mLoopImages.get(position%size).getTitle());
-            for(int i=0;i<size;i++){
-
-                if(i == position % size){
-                    points.get(i).setBackgroundResource(R.drawable.whitepoint);
-                }else{
-                    points.get(i).setBackgroundResource(R.drawable.greypoint);
-                }
-            }
+            mCurrentPos = position;
+            updateView(mCurrentPos % size);
 
         }
 
@@ -251,6 +356,12 @@ public class ImageCarouselView extends RelativeLayout{
         public void onPageScrollStateChanged(int state) {
 
         }
+    }
+
+
+    public interface LoopImageListenter{
+
+        public void imageOnClickListenter(int position);
     }
 
 }

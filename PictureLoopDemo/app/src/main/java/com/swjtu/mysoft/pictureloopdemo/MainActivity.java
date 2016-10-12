@@ -4,12 +4,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Toast;
+
 import com.swjtu.mysoft.pictureloopdemo.bean.LoopImage;
 import com.swjtu.mysoft.pictureloopdemo.view.ImageCarouselView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ImageCarouselView.LoopImageListenter {
 
 
     private ImageCarouselView mImagecarouselView;
@@ -51,11 +53,20 @@ public class MainActivity extends AppCompatActivity {
         loopImage4.setTitle("西南交大美如画4");
         loopImage4.setmBitmap(bd4.getBitmap());
         mLoopImages.add(loopImage4);
+
         //3. 进行数据绑定
-        mImagecarouselView.bindData(mLoopImages);
+        mImagecarouselView.bindData(mLoopImages,this);
+
+
 
 
     }
 
 
+    @Override
+    public void imageOnClickListenter(int position) {
+
+        //设置点击事件 TODO
+        Toast.makeText(this,"您点击了："+position,Toast.LENGTH_SHORT).show();
+    }
 }
