@@ -32,7 +32,7 @@ import java.util.TimerTask;
  * 图片轮播view
  * Created by yhp5210 on 2016/9/21.
  */
-public class ImageCarouselView extends RelativeLayout implements Runnable{
+public class ImageCarouselView extends RelativeLayout implements Runnable {
 
     private final String TAG = "ImageCarouselView";
     private Context context;
@@ -43,28 +43,29 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
     private List<LoopImage> mLoopImages;
     private TextView mTitleTextView;
     private boolean mAutoScroll;
-    private LoopImageListenter  mListener;
+    private LoopImageListenter mListener;
     private int mCurrentPos; // 记录当前图片的下标
     private long mSleepTime = 2000; //停顿时间默认一秒
     private TypedArray mTypedArray;
     private final int MSG_UPDATE_IMAGES = 0;
     private Thread mAutoLoopThread;
 
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new Handler() {
 
         @Override
-        public void handleMessage(Message msg){
+        public void handleMessage(Message msg) {
 
-            switch (msg.what){
+            switch (msg.what) {
 
-                case MSG_UPDATE_IMAGES:{
+                case MSG_UPDATE_IMAGES: {
 
-                    if(null != views && views.size() > 1 &&mAutoScroll){
-                        updateView((++mCurrentPos)%views.size());
-                        sendEmptyMessageDelayed(MSG_UPDATE_IMAGES,mSleepTime);
+                    if (null != views && views.size() > 1 && mAutoScroll) {
+                        updateView((++mCurrentPos) % views.size());
+                        sendEmptyMessageDelayed(MSG_UPDATE_IMAGES, mSleepTime);
                     }
 
-                }break;
+                }
+                break;
 
             }
 
@@ -76,38 +77,39 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
         super(context);
         this.context = context;
     }
+
     public ImageCarouselView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        mTypedArray = context.obtainStyledAttributes(attrs,R.styleable.ImageCarouselView);
+        mTypedArray = context.obtainStyledAttributes(attrs, R.styleable.ImageCarouselView);
     }
+
     public ImageCarouselView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
-        mTypedArray = context.obtainStyledAttributes(attrs,R.styleable.ImageCarouselView);
+        mTypedArray = context.obtainStyledAttributes(attrs, R.styleable.ImageCarouselView);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setMeasuredDimension(getSize(widthMeasureSpec),getSize(heightMeasureSpec));
+        setMeasuredDimension(getSize(widthMeasureSpec), getSize(heightMeasureSpec));
     }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
 
 
-
-        if(!isReady){
+        if (!isReady) {
 
 
             //得到相应的参数
-            mAutoScroll = mTypedArray.getBoolean(R.styleable.ImageCarouselView_autoScroll,true);
-            mSleepTime = mTypedArray.getInt(R.styleable.ImageCarouselView_loopSleepTime,1500);
+            mAutoScroll = mTypedArray.getBoolean(R.styleable.ImageCarouselView_autoScroll, true);
+            mSleepTime = mTypedArray.getInt(R.styleable.ImageCarouselView_loopSleepTime, 1500);
             mViewPager = new ViewPager(context);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
                     , ViewGroup.LayoutParams.MATCH_PARENT);
-            this.addView(mViewPager,params);
+            this.addView(mViewPager, params);
             points = new ArrayList<ImageView>();
 
             //底下包含标题以及point的RelativeLayout
@@ -126,28 +128,28 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
             pointParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             pointParams.addRule(RelativeLayout.CENTER_VERTICAL);
 
-            int tailMarginLeftAndRight = (int)context.getResources().getDimension(R.dimen.tail_leftAndRight_Margin);
-            int marginRight = (int)context.getResources().getDimension(R.dimen.point_distance);
-            int marginTop = (int)context.getResources().getDimension(R.dimen.point_topMarign);
-            int marginBottom = (int)context.getResources().getDimension(R.dimen.point_BottomMarign);
+            int tailMarginLeftAndRight = (int) context.getResources().getDimension(R.dimen.tail_leftAndRight_Margin);
+            int marginRight = (int) context.getResources().getDimension(R.dimen.point_distance);
+            int marginTop = (int) context.getResources().getDimension(R.dimen.point_topMarign);
+            int marginBottom = (int) context.getResources().getDimension(R.dimen.point_BottomMarign);
 
             pointParams.setMarginEnd(tailMarginLeftAndRight);
-            for(int i=0;i<views.size();i++){
+            for (int i = 0; i < views.size(); i++) {
                 ImageView point = new ImageView(context);
                 points.add(point);
             }
             LinearLayout.LayoutParams singlePointParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT
                     , ViewGroup.LayoutParams.WRAP_CONTENT);
 
-            singlePointParams.setMargins(0,marginTop,marginRight,marginBottom);
-            for(int i=0;i<points.size();i++){
+            singlePointParams.setMargins(0, marginTop, marginRight, marginBottom);
+            for (int i = 0; i < points.size(); i++) {
                 ImageView point = points.get(i);
-                if(i==0){
+                if (i == 0) {
                     point.setBackgroundResource(R.drawable.whitepoint);
-                }else{
+                } else {
                     point.setBackgroundResource(R.drawable.greypoint);
                 }
-                pointsContainer.addView(point,singlePointParams);
+                pointsContainer.addView(point, singlePointParams);
             }
 
             //添加标题栏内容
@@ -158,15 +160,16 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
                     , ViewGroup.LayoutParams.WRAP_CONTENT);
             titleParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
             titleParams.addRule(RelativeLayout.CENTER_VERTICAL);
-            titleParams.setMargins(tailMarginLeftAndRight,marginTop,0,marginBottom);
-            tailContent.addView(mTitleTextView,titleParams);
-            tailContent.addView(pointsContainer,pointParams);
-            addView(tailContent,tailParams);
+            titleParams.setMargins(tailMarginLeftAndRight, marginTop, 0, marginBottom);
+            tailContent.addView(mTitleTextView, titleParams);
+            tailContent.addView(pointsContainer, pointParams);
+            addView(tailContent, tailParams);
             mViewPager.setAdapter(new ImagePageAdapter(views));
             mViewPager.setOnPageChangeListener(new ImageOnPageChangeListener(views));
-            if(mAutoScroll){
+            if (mAutoScroll && views.size() > 1) {
                 mAutoLoopThread = new Thread(this);
                 mAutoLoopThread.start();
+
             }
 
         }
@@ -174,28 +177,28 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
         super.onLayout(changed, l, t, r, b);
 
 
-
     }
 
 
-
-    public int getSize(int measureSpec){
+    public int getSize(int measureSpec) {
 
         int mode = MeasureSpec.getMode(measureSpec);
         int size = 200;
-        switch (mode){
+        switch (mode) {
 
-            case MeasureSpec.EXACTLY:{
+            case MeasureSpec.EXACTLY: {
 
                 size = MeasureSpec.getSize(measureSpec);
 
-            }break;
-            case MeasureSpec.AT_MOST:{
+            }
+            break;
+            case MeasureSpec.AT_MOST: {
 
-                size = Math.min(size,MeasureSpec.getSize(measureSpec));
+                size = Math.min(size, MeasureSpec.getSize(measureSpec));
 
-            }break;
-            default:{
+            }
+            break;
+            default: {
                 size = 200;
             }
         }
@@ -204,15 +207,17 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
 
     /**
      * 必须要调用，初始化view
+     *
      * @param loopImages
      */
-    public void bindData(List<LoopImage> loopImages,LoopImageListenter listener){
+    public void bindData(List<LoopImage> loopImages, LoopImageListenter listener) {
+
 
         mLoopImages = loopImages;
         mListener = listener;
         views = new ArrayList<View>();
-        for(int i=0;i<mLoopImages.size();i++){
-            View view = LayoutInflater.from(getContext()).inflate(R.layout.top_image,null);
+        for (int i = 0; i < mLoopImages.size(); i++) {
+            View view = LayoutInflater.from(getContext()).inflate(R.layout.top_image, null);
             ImageView iv1 = (ImageView) view.findViewById(R.id.image);
             Bitmap bitmap = mLoopImages.get(i).getmBitmap();
             BitmapDrawable bd = new BitmapDrawable(bitmap);
@@ -222,22 +227,20 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
 
 
 
-
-
     }
 
-    public void setAutoScroll(boolean isAutoScroll){
+    public void setAutoScroll(boolean isAutoScroll) {
         mAutoScroll = isAutoScroll;
     }
 
 
-    public void updateView(int position){
+    public void updateView(int position) {
 
-        for(int i=0;i<points.size();i++){
+        for (int i = 0; i < points.size(); i++) {
             ImageView point = points.get(i);
-            if(i==position){
+            if (i == position) {
                 point.setBackgroundResource(R.drawable.whitepoint);
-            }else{
+            } else {
                 point.setBackgroundResource(R.drawable.greypoint);
             }
         }
@@ -248,36 +251,37 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
     @Override
     public void run() {
 
-        if (mAutoScroll){
+        if (mAutoScroll) {
 
-            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_IMAGES,mSleepTime);
+            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_IMAGES, mSleepTime);
 
         }
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev){
+    public boolean dispatchTouchEvent(MotionEvent ev) {
 
         return super.dispatchTouchEvent(ev);
     }
 
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev){
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
 
-        if(MotionEvent.ACTION_DOWN == ev.getAction()){
+        if (MotionEvent.ACTION_DOWN == ev.getAction()) {
 
             mAutoScroll = false;
-        }else if(MotionEvent.ACTION_UP == ev.getAction()){
+
+        } else if (MotionEvent.ACTION_UP == ev.getAction()) {
             mAutoScroll = true;
-            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_IMAGES,mSleepTime);
+            mHandler.removeMessages(MSG_UPDATE_IMAGES);
+            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_IMAGES, mSleepTime);
         }
         return super.onInterceptTouchEvent(ev);
 
     }
 
 
-
-    public void stopImageLoop(){
+    public void stopImageLoop() {
 
         mAutoScroll = false;
         mAutoLoopThread = null;
@@ -289,11 +293,12 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
         private List<View> src;
 
 
-        public ImagePageAdapter(List<View> src){
+        public ImagePageAdapter(List<View> src) {
 
             this.src = src;
 
         }
+
         @Override
         public int getCount() {
             return src.size();
@@ -301,7 +306,7 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
 
         @Override
         public boolean isViewFromObject(View view, Object object) {
-            return view==object;
+            return view == object;
         }
 
         @Override
@@ -311,13 +316,13 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            container.removeView(src.get(position%src.size()));
+            container.removeView(src.get(position % src.size()));
         }
 
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
 
-            View view = src.get(position%src.size());
+            View view = src.get(position % src.size());
             container.addView(view);
             view.setOnClickListener(new OnClickListener() {
                 @Override
@@ -334,10 +339,11 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
 
         public List<View> views;
 
-        public ImageOnPageChangeListener( List<View> views){
+        public ImageOnPageChangeListener(List<View> views) {
 
             this.views = views;
         }
+
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -359,7 +365,7 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
     }
 
 
-    public interface LoopImageListenter{
+    public interface LoopImageListenter {
 
         public void imageOnClickListenter(int position);
     }
