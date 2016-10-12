@@ -60,7 +60,7 @@ public class ImageCarouselView extends RelativeLayout implements Runnable{
                 case MSG_UPDATE_IMAGES:{
 
                     if(null != views && views.size() > 1 &&mAutoScroll){
-                        updateView((mCurrentPos++)%views.size());
+                        updateView((++mCurrentPos)%views.size());
                         sendEmptyMessageDelayed(MSG_UPDATE_IMAGES,mSleepTime);
                     }
 
