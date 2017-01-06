@@ -3,6 +3,7 @@
 tags: Android，广告，轮播图组件
 
 运行效果如下图：
+
 ![效果](http://og1qqf1es.bkt.clouddn.com/picloop.gif)
 
 
